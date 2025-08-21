@@ -1,0 +1,76 @@
+syntax = "proto3";
+package cart.v1;
+import "common/v1/common.proto";
+import "product/v1/product.proto";
+
+option go_package = "ecommerce-grpc-api/gen/go/cart/v1;cartv1";
+
+
+
+// cart represents a shopping cart in the e-commerce system.
+message Cart {
+    common.v1.UUID id = 1; // Unique identifier for the cart
+    common.v1.UUID tenant_id = 2; // ID of the tenant to which the cart belongs
+    common.v1.UUID user_id = 3; // ID of the user who owns the cart
+    repeated CartItem items = 4; // List of items in the cart
+    common.v1.Timestamp created_at = 5; // Timestamp when the cart was created
+    common.v1.Timestamp updated_at = 6; // Timestamp when the cart was last updated
+}
+// CartItem represents an item in the shopping cart.
+message CartItem {
+    common.v1.UUID id = 1; // Unique identifier for the cart item
+    common.v1.UUID cart_id = 2; // ID of the cart to which the item belongs
+    product.v1.Product product = 3; // Product details
+    int32 quantity = 4; // Quantity of the product in the cart
+}
+
+message GetCartRequest {
+    common.v1.UUID id = 1; // ID of the cart to retrieve
+}
+message GetCartResponse {
+    Cart cart = 1; // The retrieved cart object
+}
+message AddCartItemRequest {
+    common.v1.UUID cart_id = 1; // ID of the cart to which the item will be added
+    common.v1.UUID product_id = 2; // Product ID to be added to the cart
+    int32 quantity = 3; // Quantity of the product to be added
+}
+message AddCartItemResponse {
+    Cart cart = 1; // The updated cart object after adding the item
+}
+//UpdateItemQuantityRequest
+// This message is used to update the quantity of an item in the cart.
+message UpdateItemQuantityRequest {
+    common.v1.UUID cart_id = 1; // ID of the cart containing the item
+    common.v1.UUID item_id = 2; // ID of the cart item
+    int32 quantity = 3; // New quantity for the cart item
+}
+message UpdateItemQuantityResponse {
+    Cart cart = 1; // The updated cart object after changing the item quantity
+}
+//RemoveCartItemRequest
+// This message is used to remove an item from the cart.
+message RemoveCartItemRequest {
+    common.v1.UUID cart_id = 1; // ID of the cart from which the item will be removed
+    common.v1.UUID item_id = 2; // ID of the cart item to be removed
+}
+message RemoveCartItemResponse {
+    Cart cart = 1; // The updated cart object after removing the item
+}
+// ClearCartRequest
+// This message is used to clear all items from the cart.
+message ClearCartRequest {
+    common.v1.UUID cart_id = 1; // ID of the cart to be cleared
+}
+message ClearCartResponse {
+    Cart cart = 1; // The updated cart object after clearing all items
+}
+
+// CartService provides methods for managing shopping carts.
+service CartService {
+    rpc GetCart(GetCartRequest) returns (GetCartResponse); // Get a cart by its ID
+    rpc AddCartItem(AddCartItemRequest) returns (AddCartItemResponse); // Add an item to the cart
+    rpc UpdateItemQuantity(UpdateItemQuantityRequest) returns (UpdateItemQuantityResponse); // Update the quantity of an item in the cart
+    rpc RemoveCartItem(RemoveCartItemRequest) returns (RemoveCartItemResponse); // Remove an item from the cart
+    rpc ClearCart(ClearCartRequest) returns (ClearCartResponse); // Clear all items from the cart
+}
