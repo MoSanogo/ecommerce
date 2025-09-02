@@ -1,0 +1,71 @@
+syntax="proto3";
+package user.v1;
+
+import "buf/validate/validate.proto";
+import "common/v1/common.proto";
+option go_package = "ecommerce-grpc-api/gen/go/user/v1;userv1";
+
+message User {
+   common.v1.UUID id=1;
+   string username=2 [(buf.validate.field).string.min_len=3, (buf.validate.field).max_len=255];
+   string email=3 [(buf.validate.field).email=true];
+   repeated string roles=4; // List of roles assigned to the user
+   common.v1.Timestamp created_at=5;
+   common.v1.Timestamp updated_at=6;
+}
+
+// List users
+// This message is used to request a list of users, optionally filtered by tenant ID and paginated.
+// It includes fields for page number, and page size.
+// The response includes a list of users.
+message ListUsersRequest {
+   int32 limit=1;
+   int32 offset=2;
+}
+message ListUsersResponse {
+    repeated User users = 1; // List of users
+    int32 total_count = 2; // Total number of users matching the criteria
+}
+// Get user
+// This message is used to retrieve a specific user by their ID.
+// It includes the user ID in the request and returns the user object in the response.
+message GetUserRequest {
+    common.v1.UUID id=1;
+}
+ message GetUserResponse {
+    User user=1;
+ }
+// Update user
+// This message is used to update an existing user's information.
+// It includes the user ID, email, and roles to be updated.
+// The response indicates whether the update was successful.
+message UpdateUserRequest {
+    common.v1.UUID id=1;
+    string email=2; // Email address of the user
+    repeated string roles=3; // List of roles assigned to the user
+}
+message UpdateUserResponse {
+    bool success=1; // Indicates whether the update was successful
+}
+
+// Delete user
+// This message is used to delete a user by their ID.
+// It includes the user ID in the request and returns a success flag in the response.   
+
+message DeleteUserRequest {
+    common.v1.UUID id=1;
+}
+message DeleteUserResponse {
+    bool success=1; // Indicates whether the deletion was successful
+    string message=2; // Optional message providing additional information about the deletion
+}
+
+// UserService
+// This service provides methods for user management, including creating, retrieving, updating, deleting, and listing users.        
+ 
+service UserService {
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+    rpc ListUsers (ListUsersRequest) returns (ListUsersResponse);
+ }

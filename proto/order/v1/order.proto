@@ -1,0 +1,86 @@
+syntax="proto3";
+package order.v1;
+import "common/v1/common.proto";
+import "product/v1/product.proto";
+
+option go_package = "ecommerce-grpc-api/gen/go/order/v1;orderv1";
+
+
+
+//Order represents a customer's order in the e-commerce system.
+message Order {
+    common.v1.UUID id = 1; // Unique identifier for the order
+    common.v1.UUID user_id = 2; // ID of the user who placed the order
+    OrderStatus.Status status = 3; // Current status of the order
+    double amount = 4; // Total amount for the order
+    string order_date = 5; // Date when the order was placed
+    repeated OrderItem items = 6; // List of items in the order
+    string payment_method = 7; // Payment method used for the order
+    string shipping_status = 8; // Shipping status of the order
+    string shipping_tracking_number = 9; // Tracking number for the shipment
+    string shipping_address = 10; // Shipping address for the order
+    common.v1.Timestamp created_at = 11; // Timestamp when the order was created
+    common.v1.Timestamp updated_at = 12; // Timestamp when the order was last updated
+}
+message OrderStatus {
+    enum Status {
+        PENDING = 0; // Order is pending
+        PROCESSING = 1; // Order is being processed
+        SHIPPED = 2; // Order has been shipped
+        DELIVERED = 3; // Order has been delivered
+        CANCELLED = 4; // Order has been cancelled
+    }
+    Status status = 1; // Current status of the order
+}
+message OrderItem {
+    common.v1.UUID id = 1; // Unique identifier for the order item
+    common.v1.UUID order_id = 2; // ID of the order to which the item belongs
+    product.v1.Product product = 3; // Product details
+    int32 quantity = 4; // Quantity of the product in the order
+    double price = 5; // Price of the product at the time of order
+}
+message GetOrderRequest {
+    common.v1.UUID id = 1; // ID of the order to retrieve
+}
+message GetOrderResponse {
+    Order order = 1; // The retrieved order object
+}
+message CreateOrderRequest {
+    common.v1.UUID tenant_id = 1; // ID of the tenant for the order
+    common.v1.UUID user_id = 2; // ID of the user placing the order
+    repeated OrderItem items = 3; // List of items to be included in the order
+}   
+
+message CreateOrderResponse {
+    Order order = 1; // The created order object
+}
+message UpdateOrderStatusRequest {
+    common.v1.UUID id = 1; // ID of the order to update
+    OrderStatus.Status status = 2; // New status for the order
+}
+message UpdateOrderStatusResponse {
+    Order order = 1; // The updated order object after changing the status
+}
+message CancelOrderRequest {
+    common.v1.UUID id = 1; // ID of the order to cancel
+}
+message CancelOrderResponse {
+    Order order = 1; // The cancelled order object
+}
+message ListOrdersRequest {
+    common.v1.UUID tenant_id = 1; // ID of the tenant for which to list orders
+    common.v1.UUID user_id = 2; // ID of the user for which to list orders
+}
+message ListOrdersResponse {
+    repeated Order orders = 1; // List of orders for the specified tenant and user
+}   
+
+
+//OrderService
+service OrderService {
+    rpc GetOrder(GetOrderRequest) returns (GetOrderResponse); // Retrieve an order by its ID
+    rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse); // Create a new order
+    rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse); // Update the status of an existing order
+    rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse); // Cancel an existing order
+    rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse); // List orders for a tenant and user
+}

@@ -1,0 +1,76 @@
+syntax="proto3";
+package product.v1;
+import "common/v1/common.proto";
+
+option go_package = "ecommerce-grpc-api/gen/go/product/v1;productv1";
+
+
+message Product{
+   common.v1.UUID id=1;
+   string tenant_id=2;
+   string name=3;
+   string description=4;
+   double price=5;
+   int32 stock_quantity=6;
+   string category=7; // Category of the product
+   repeated string image_urls=8; // URLs of the product images
+   common.v1.Timestamp created_at=9;
+   common.v1.Timestamp updated_at=10;
+
+}
+
+message GetProductRequest {
+   common.v1.UUID id=1;
+}
+
+message GetProductResponse {
+   Product product=1;
+}
+message ListProductsRequest {
+   int32 limit=1;
+   int32 offset=2;
+   string tenant_id=3; // Optional filter by tenant ID
+   string category=4; // Optional filter by product category
+   string search_query=5; // Optional search query for product name or description
+}
+message ListProductsResponse {
+   repeated Product products=1;
+}
+message CreateProductRequest {
+   string name=1;
+   string  description=2;
+   double price=3;
+   int32 stock_quantity=4;
+}
+
+message CreateProductResponse {
+   Product product=1;
+}
+
+message UpdateProductRequest {
+   common.v1.UUID id=1;
+   string name=2;
+   string description=3;
+   double price=4;
+   int32 stock_quantity=5;
+}
+
+message UpdateProductResponse{
+   Product product=1;
+}
+message DeleteProductRequest {
+    common.v1.UUID id=1;
+}
+message DeleteProductResponse {
+   bool success=1 ;
+}
+
+
+service ProductService {
+
+   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+   rpc ListProducts(ListProductsRequest)returns (ListProductsResponse);
+   rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+   rpc UpdateProduct(UpdateProductRequest)returns (UpdateProductResponse);
+   rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+}

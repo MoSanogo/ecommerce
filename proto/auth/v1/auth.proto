@@ -1,0 +1,102 @@
+syntax="proto3";
+package auth.v1;
+import "common/v1/common.proto";
+import "user/v1/user.proto";
+
+option go_package = "ecommerce-grpc-api/gen/go/auth/v1;authv1";
+// AuthError
+// This message is used to represent an authentication error.
+// It includes a message field to describe the error and a code field to indicate the type of error.
+message AuthError {
+    string message=1; // Error message describing the authentication failure
+    int32 code=2; // Error code indicating the type of authentication error
+}
+//Register user
+// This message is used to create a new user in the system.
+// It includes fields for username, email, and password.
+// The response includes the created user object.
+message RegisterUserRequest {
+    string username=1;
+    string email =2;
+    string password=3;
+
+}
+message RegisterUserResponse {
+    oneof result {
+        user.v1.User user=1; // The created user object
+        AuthError error=2; // Error details if registration fails
+    }
+}
+
+
+
+message LoginRequest {
+    string email=1;
+    string password=2;
+}
+
+
+message LoginResponse {
+    oneof result {
+        string token=1; // JWT token for authenticated user
+        AuthError error=2; // Error details if authentication fails
+    }
+}
+
+message LogoutRequest {
+    string token=1;
+}
+
+message LogoutResponse {
+    oneof result {
+        string message=1; // Message indicating the result of the logout operation
+        AuthError error=2; // Error details if logout fails
+    }
+}
+
+// Update user password
+// This message is used to update a user's password.
+// It includes the user ID, old password, and new password.
+// The response indicates whether the password update was successful.
+// It is important to ensure that the old password is correct before allowing the update.   
+// This helps prevent unauthorized password changes.
+//only the user with the correct old password can change to a new password.
+message UpdateUserPasswordRequest {
+    common.v1.UUID id=1;
+    string old_password=2;
+    string new_password=3;
+}
+// UpdateUserPasswordResponse
+// This message is used to indicate the success or failure of the password update operation.
+// It includes a success flag to indicate whether the password was updated successfully.
+message UpdateUserPasswordResponse {
+    bool success=1; // Indicates whether the password update was successful
+}
+//Unregister user
+// This message is used to delete a user from the system.
+// It includes the user ID in the request and returns a success flag in the response.
+message UnregisterUserRequest {
+    common.v1.UUID id=1; // ID of the user to be deleted
+}
+message UnregisterUserResponse {
+    bool success=1; // Indicates whether the user was successfully deleted
+    string message=2; // Optional message providing additional information about the deletion
+}
+//
+message ValidateTokenRequest {
+    string token=1; // The token to be validated
+}
+message ValidateTokenResponse {
+    bool valid=1; // Indicates whether the token is valid
+    common.v1.UUID user_id=2; // The ID of the user associated with the token
+    string message=3; // Optional message providing additional information about the validation
+}
+// AuthService
+service AuthService {
+    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
+    rpc UpdateUserPassword(UpdateUserPasswordRequest) returns (UpdateUserPasswordResponse);
+    rpc UnregisterUser(UnregisterUserRequest) returns (UnregisterUserResponse);
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}

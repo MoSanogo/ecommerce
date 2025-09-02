@@ -1,0 +1,23 @@
+syntax="proto3";
+package wishlist.v1;
+option go_package = "github.com/wishlit/wishlit/gen/go/wishlit/v1;v1";
+import "common/v1/common.proto";
+
+message Wishlist {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated WishlistItem wishes = 4;
+  common.v1.Timestamp created_at = 5;
+  common.v1.Timestamp updated_at = 6;
+}
+message WishlistItem {
+  string id = 1;
+  string wishlist_id = 2;
+  common.v1.UUID user_id = 3;
+  common.v1.UUID product_id = 4;
+  common.v1.Timestamp added_at = 5;
+  common.v1.Timestamp removed_at = 6;
+}
+message createdWishlist{
+}
