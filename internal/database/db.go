@@ -87,14 +87,10 @@ func (db *DB) InitSchema() error {
 	CREATE TABLE IF NOT EXISTS orders (
 		id TEXT PRIMARY KEY,
 		user_id TEXT NOT NULL,
-		quantity INTEGER NOT NULL,
 		amount REAL NOT NULL,
 		status TEXT NOT NULL,
 		soft_delete BOOLEAN DEFAULT FALSE,
 		shipping_address TEXT NOT NULL,
-		billing_address TEXT NOT NULL,
-		payment_method TEXT NOT NULL,
-		payment_status TEXT NOT NULL,
 		shipping_status TEXT NOT NULL,
 		shipping_tracking_number TEXT NOT NULL,
 		order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -112,6 +108,48 @@ func (db *DB) InitSchema() error {
 		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (order_id) REFERENCES orders(id),
 		FOREIGN KEY (product_id) REFERENCES products(id)
+	);
+	CREATE TABLE IF NOT EXISTS payments (
+		id TEXT PRIMARY KEY,
+		order_id TEXT NOT NULL,
+		amount REAL NOT NULL,
+		status TEXT NOT NULL,
+		payment_method TEXT NOT NULL,
+		transaction_id TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (order_id) REFERENCES orders(id)
+	);
+	CREATE TABLE IF NOT EXISTS reviews (
+		id TEXT PRIMARY KEY,
+		product_id TEXT NOT NULL,
+		user_id TEXT NOT NULL,
+		rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+		comment TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (product_id) REFERENCES products(id),
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);
+	CREATE TABLE IF NOT EXISTS wishlists (
+		id TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
+		name TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id),
+		FOREIGN KEY (product_id) REFERENCES products(id)
+	);
+	CREATE TABLE IF NOT EXISTS wishlist_items (
+		id TEXT PRIMARY KEY,
+		wishlist_id TEXT NOT NULL,
+		user_id TEXT NOT NULL,
+		product_id TEXT NOT NULL,
+		added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		removed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (wishlist_id) REFERENCES wishlists(id),
+		FOREIGN KEY (product_id) REFERENCES products(id),
+		FOREIGN KEY (user_id) REFERENCES users(id)
 	);
 	`
 	_, err := db.Exec(schemaSQL)

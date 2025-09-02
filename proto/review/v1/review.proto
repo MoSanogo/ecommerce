@@ -1,0 +1,203 @@
+syntax="proto3";
+package review.v1;
+import "buf/validate/validate.proto";
+import "common/v1/common.proto";
+option go_package = "ecommerce-grpc-api/gen/go/review/v1;reviewv1";
+
+message Review {
+   common.v1.UUID id=1;
+   common.v1.UUID product_id=2;
+   common.v1.UUID user_id=3;
+   int32 rating=4 [(buf.validate.field).int.gt=0, (buf.validate.field).int.lte=5];
+   string comment=5 [(buf.validate.field).string.max_len=1000];
+   common.v1.Timestamp created_at=6;
+   common.v1.Timestamp updated_at=7;
+}
+
+
+// List reviews
+// This message is used to request a list of reviews, optionally filtered by product ID and paginated.
+// It includes fields for page number, page size, and product ID.
+// The response includes a list of reviews and the total count of reviews matching the criteria.
+message ListReviewsRequest {
+   int32 limit=1;
+   int32 offset=2;
+   common.v1.UUID product_id=3; // Optional filter by product ID
+}
+message ListReviewsResponse {
+    repeated Review reviews = 1; // List of reviews
+    int32 total_count = 2; // Total number of reviews matching the criteria
+}
+
+// Get review
+// This message is used to retrieve a specific review by its ID.
+// It includes the review ID in the request and returns the review object in the response.
+message GetReviewRequest {
+    common.v1.UUID id=1;
+}
+ message GetReviewResponse {
+    Review review=1;
+ }          
+// Create review
+// This message is used to create a new review.
+// It includes fields for product ID, user ID, rating, and comment.
+// The response returns the created review object.
+message CreateReviewRequest {
+    common.v1.UUID product_id=1;
+    common.v1.UUID user_id=2;
+    int32 rating=3 [(buf.validate.field).int.gt=0, (buf.validate.field).int.lte=5];
+    string comment=4 [(buf.validate.field).string.max_len=1000];
+}
+message CreateReviewResponse {
+    Review review=1;
+}
+// Update review
+// This message is used to update an existing review's information.
+// It includes the review ID, rating, and comment to be updated.
+// The response indicates whether the update was successful.
+message UpdateReviewRequest {
+    common.v1.UUID id=1;
+    int32 rating=2 [(buf.validate.field).int.gt=0, (buf.validate.field).int.lte=5];
+    string comment=3 [(buf.validate.field).string.max_len=1000];
+}
+message UpdateReviewResponse {
+    bool success=1; // Indicates whether the update was successful
+}       
+
+// Delete review
+// This message is used to delete a review by its ID.
+// It includes the review ID in the request and returns a success flag in the response.   
+message DeleteReviewRequest {
+    common.v1.UUID id=1;
+}
+message DeleteReviewResponse {
+    bool success=1; // Indicates whether the deletion was successful
+    string message=2; // Optional message providing additional information about the deletion
+}           
+
+
+// Get average rating
+// This message is used to retrieve the average rating for a specific product.
+// It includes the product ID in the request and returns the average rating in the response.
+message GetAverageRatingRequest {   
+    common.v1.UUID product_id=1;
+}
+message GetAverageRatingResponse {
+    double average_rating=1; // Average rating for the product
+    int32 review_count=2; // Total number of reviews for the product
+}
+
+// Get user reviews
+// This message is used to retrieve all reviews made by a specific user.
+// It includes the user ID in the request and returns a list of reviews in the response.
+message GetUserReviewsRequest {
+    common.v1.UUID user_id=1;
+}
+message GetUserReviewsResponse {
+    repeated Review reviews=1; // List of reviews made by the user
+}   
+// Get product reviews
+// This message is used to retrieve all reviews for a specific product.
+// It includes the product ID in the request and returns a list of reviews in the response.
+message GetProductReviewsRequest {
+    common.v1.UUID product_id=1;
+}
+message GetProductReviewsResponse {
+    repeated Review reviews=1; // List of reviews for the product
+}   
+// Get top rated products
+// This message is used to retrieve a list of top-rated products based on average review ratings.
+// It includes fields for the number of products to return and an optional minimum number of reviews filter.
+// The response includes a list of product IDs along with their average ratings and review counts.
+message GetTopRatedProductsRequest {
+    int32 limit=1; // Number of top-rated products to return
+    int32 min_reviews=2; // Optional minimum number of reviews filter
+}
+message TopRatedProduct {
+    common.v1.UUID product_id=1;
+    double average_rating=2; // Average rating for the product
+    int32 review_count=3; // Total number of reviews for the product
+}
+message GetTopRatedProductsResponse {
+    repeated TopRatedProduct products=1; // List of top-rated products
+}
+// Get recent reviews
+// This message is used to retrieve a list of the most recent reviews across all products.
+// It includes fields for the number of reviews to return.              
+
+message GetRecentReviewsRequest {
+    int32 limit=1; // Number of recent reviews to return
+}
+message GetRecentReviewsResponse {
+    repeated Review reviews=1; // List of recent reviews
+} // The response includes a list of reviews sorted by creation date in descending order            
+
+// Search reviews
+// This message is used to search for reviews containing specific keywords in their comments.
+// It includes fields for the search query, page number, and page size.
+// The response includes a list of matching reviews and the total count of reviews matching the search criteria         
+
+message SearchReviewsRequest {
+    string query=1; // Search keywords
+    int32 limit=2;
+    int32 offset=3;
+}
+message SearchReviewsResponse {
+    repeated Review reviews=1; // List of matching reviews
+    int32 total_count=2; // Total number of reviews matching the search criteria
+}
+
+// Get review statistics
+// This message is used to retrieve statistical data about reviews for a specific product.                  
+
+
+message GetReviewStatisticsRequest {
+    common.v1.UUID product_id=1;
+}
+message ReviewStatistics {
+    int32 total_reviews=1; // Total number of reviews for the product
+    double average_rating=2; // Average rating for the product
+    int32 five_star_count=3; // Number of 5-star reviews
+    int32 four_star_count=4; // Number of 4-star reviews
+    int32 three_star_count=5; // Number of 3-star reviews
+    int32 two_star_count=6; // Number of 2-star reviews
+    int32 one_star_count=7; // Number of 1-star reviews
+}
+message GetReviewStatisticsResponse {
+    ReviewStatistics statistics=1; // Review statistics for the product
+}   
+// Moderate review
+// This message is used by administrators to moderate reviews, such as approving or rejecting them.
+// It includes the review ID and the moderation action to be taken.
+// The response indicates whether the moderation action was successful.
+message ModerateReviewRequest {
+    common.v1.UUID id=1;
+    enum Action {
+        APPROVE=0;
+        REJECT=1;
+    }
+    Action action=2;
+}
+message ModerateReviewResponse {
+    bool success=1; // Indicates whether the moderation action was successful
+    string message=2; // Optional message providing additional information about the moderation action
+}
+
+// ReviewService
+// This service provides methods for managing reviews, including creating, retrieving, updating, deleting, and listing reviews.
+// It also includes methods for getting average ratings, user reviews, product reviews, top-rated products, recent reviews, searching reviews, getting review statistics, and moderating reviews.
+service ReviewService {             
+    rpc GetReview (GetReviewRequest) returns (GetReviewResponse);
+    rpc CreateReview (CreateReviewRequest) returns (CreateReviewResponse);
+    rpc UpdateReview (UpdateReviewRequest) returns (UpdateReviewResponse);
+    rpc DeleteReview (DeleteReviewRequest) returns (DeleteReviewResponse);
+    rpc ListReviews (ListReviewsRequest) returns (ListReviewsResponse);
+    rpc GetAverageRating (GetAverageRatingRequest) returns (GetAverageRatingResponse);
+    rpc GetUserReviews (GetUserReviewsRequest) returns (GetUserReviewsResponse);
+    rpc GetProductReviews (GetProductReviewsRequest) returns (GetProductReviewsResponse);
+    rpc GetTopRatedProducts (GetTopRatedProductsRequest) returns (GetTopRatedProductsResponse);
+    rpc GetRecentReviews (GetRecentReviewsRequest) returns (GetRecentReviewsResponse);
+    rpc SearchReviews (SearchReviewsRequest) returns (SearchReviewsResponse);
+    rpc GetReviewStatistics (GetReviewStatisticsRequest) returns (GetReviewStatisticsResponse);
+    rpc ModerateReview (ModerateReviewRequest) returns (ModerateReviewResponse);
+}   
