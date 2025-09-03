@@ -6,11 +6,11 @@ import (
 )
 
 type ProductRepository interface {
-	GetProductByID(id string) (*models.Product, error)
-	CreateProduct(product *models.Product) error
-	UpdateProduct(product *models.Product) error
-	DeleteProduct(id string) error
-	ListProducts() ([]*models.Product, error)
+	GetOne(id string) (*models.Product, error)
+	InsertOne(product *models.Product) error
+	UpdateOne(product *models.Product) error
+	DeleteOne(id string) error
+	GetAll() ([]*models.Product, error)
 }
 
 type ProductRepositoryImpl struct {
@@ -21,7 +21,7 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 	return &ProductRepositoryImpl{db: db}
 }
 
-func (r *ProductRepositoryImpl) GetProductByID(id string) (*models.Product, error) {
+func (r *ProductRepositoryImpl) GetOne(id string) (*models.Product, error) {
 	var product models.Product
 	query := "SELECT id, tenant_id, name, description, price, stock_quantity, category, image_urls, created_at, updated_at FROM products WHERE id = ?"
 	err := r.db.QueryRow(query, id).Scan(&product.ID, &product.TenantID, &product.Name, &product.Description, &product.Price,
@@ -32,7 +32,7 @@ func (r *ProductRepositoryImpl) GetProductByID(id string) (*models.Product, erro
 	return &product, nil
 }
 
-func (r *ProductRepositoryImpl) CreateProduct(product *models.Product) error {
+func (r *ProductRepositoryImpl) InsertOne(product *models.Product) error {
 	query := "INSERT INTO products (id, tenant_id, name, description, price, stock_quantity, category, image_urls) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 	_, err := r.db.Exec(query, product.ID, product.TenantID, product.Name, product.Description,
 		product.Price, product.StockQuantity, product.Category, product.ImageURLs)
@@ -42,7 +42,7 @@ func (r *ProductRepositoryImpl) CreateProduct(product *models.Product) error {
 	return nil
 }
 
-func (r *ProductRepositoryImpl) UpdateProduct(product *models.Product) error {
+func (r *ProductRepositoryImpl) UpdateOne(product *models.Product) error {
 	query := "UPDATE products SET tenant_id = ?, name = ?, description = ?, price = ?, stock_quantity = ?, category = ?, image_urls = ? WHERE id = ?"
 	_, err := r.db.Exec(query, product.TenantID, product.Name, product.Description,
 		product.Price, product.StockQuantity, product.Category, product.ImageURLs, product.ID)
@@ -52,7 +52,7 @@ func (r *ProductRepositoryImpl) UpdateProduct(product *models.Product) error {
 	return nil
 }
 
-func (r *ProductRepositoryImpl) DeleteProduct(id string) error {
+func (r *ProductRepositoryImpl) DeleteOne(id string) error {
 	query := "DELETE FROM products WHERE id = ?"
 	_, err := r.db.Exec(query, id)
 	if err != nil {
@@ -61,7 +61,7 @@ func (r *ProductRepositoryImpl) DeleteProduct(id string) error {
 	return nil
 }
 
-func (r *ProductRepositoryImpl) ListProducts() ([]*models.Product, error) {
+func (r *ProductRepositoryImpl) GetAll() ([]*models.Product, error) {
 	query := "SELECT id, tenant_id, name, description, price, stock_quantity, category, image_urls, created_at, updated_at FROM products"
 	rows, err := r.db.Query(query)
 	if err != nil {
